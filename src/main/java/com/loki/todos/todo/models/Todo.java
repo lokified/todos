@@ -1,4 +1,4 @@
-package com.loki.todos.models;
+package com.loki.todos.todo.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

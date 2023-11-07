@@ -1,6 +1,6 @@
-package com.loki.todos.repositories;
+package com.loki.todos.todo.repositories;
 
-import com.loki.todos.models.Todo;
+import com.loki.todos.todo.models.Todo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
