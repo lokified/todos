@@ -1,16 +1,23 @@
 package com.loki.todos.todo.services;
 
+import com.loki.todos.auth.models.User;
+import com.loki.todos.auth.repositories.UserRepository;
 import com.loki.todos.auth.security.jwt.JwtUtils;
 import com.loki.todos.todo.exceptions.TodoException;
+import com.loki.todos.todo.exceptions.UnauthorizedAccessException;
 import com.loki.todos.todo.models.Todo;
+import com.loki.todos.todo.payload.request.TodoRequest;
+import com.loki.todos.todo.payload.response.TodoResponse;
 import com.loki.todos.todo.repositories.TodoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class TodoService {
@@ -19,28 +26,49 @@ public class TodoService {
     private TodoRepository todoRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private JwtUtils jwtUtils;
 
-    public boolean validator(String headerAuth) {
+    public User validUser(String tokenHeader) {
+        String token = tokenHeader.substring(7);
+        if (!jwtUtils.validateJwtToken(token)) {
+            throw new UnauthorizedAccessException();
+        }
+        String username = jwtUtils.getUsernameForJwt(token);
+        return userRepository.findByUsername(username).orElseThrow(
+                () -> new TodoException("User not found")
+        );
+    }
 
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            String cleanedToken = headerAuth.substring(7, headerAuth.length());
+    public List<TodoResponse> getTodos(String tokenHeader) {
+        User user = validUser(tokenHeader);
+        List<Todo> todos = todoRepository.findAllByUserId(user.getId());
 
-            return jwtUtils.validateJwtToken(cleanedToken);
+        return todos.stream().map( todo -> new TodoResponse(todo.getId(), todo.getTitle(), todo.getDescription(), todo.getDueDate(), todo.isCompleted()))
+                .collect(Collectors.toList());
+    }
+
+    public void saveTodo(TodoRequest todo, String tokenHeader) {
+        if (!jwtUtils.validateJwtToken(tokenHeader.substring(7))) {
+            throw new UnauthorizedAccessException();
         }
 
-        return false;
+        Todo todo1 = new Todo();
+        todo1.setTitle(todo.getTitle());
+        todo1.setDescription(todo.getDescription());
+        todo1.setDueDate(todo.getDueDate());
+        todo1.setCompleted(todo.isCompleted());
+        todo1.setUserId(todo.getUserId());
+
+        todoRepository.save(todo1);
     }
 
-    public List<Todo> getTodos() {
-        return todoRepository.findAll();
-    }
-
-    public void saveTodo(Todo todo) {
-        todoRepository.save(todo);
-    }
-
-    public String deleteTodo(Long id) {
+    public String deleteTodo(Long id, String tokenHeader) {
+        if (!jwtUtils.validateJwtToken(tokenHeader.substring(7))) {
+            throw new UnauthorizedAccessException();
+        }
 
         boolean exists = todoRepository.existsById(id);
 
@@ -51,15 +79,25 @@ public class TodoService {
         return "deleted";
     }
 
-    public List<Todo> searchByTitle(String title) {
+    public List<TodoResponse> searchByTitle(String title, String tokenHeader) {
+
         if (title == null) {
             throw new TodoException("Title cannot be blank");
         }
-        return todoRepository.findAllByTitle(title);
+
+        User user = validUser(tokenHeader);
+
+        return todoRepository.findAllByTitle(title, user.getId()).stream()
+                .map( todo -> new TodoResponse(todo.getId(), todo.getTitle(), todo.getDescription(), todo.getDueDate(), todo.isCompleted()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public String updateTodo(Todo todo) {
+    public String updateTodo(Todo todo, String tokenHeader) {
+
+        if (!jwtUtils.validateJwtToken(tokenHeader.substring(7))) {
+            throw new UnauthorizedAccessException();
+        }
 
         Todo exisitingTodo = todoRepository.findById(todo.getId()).orElseThrow(
                 () -> new TodoException("Todo with id " + todo.getId() + " does not exist")

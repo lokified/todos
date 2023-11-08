@@ -1,8 +1,11 @@
 package com.loki.todos.auth.models;
 
+import com.loki.todos.todo.models.Todo;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @NoArgsConstructor
 @Data

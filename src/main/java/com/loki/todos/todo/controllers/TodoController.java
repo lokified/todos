@@ -5,6 +5,8 @@ import com.loki.todos.auth.security.jwt.JwtUtils;
 import com.loki.todos.todo.exceptions.TodoException;
 import com.loki.todos.todo.exceptions.UnauthorizedAccessException;
 import com.loki.todos.todo.models.Todo;
+import com.loki.todos.todo.payload.request.TodoRequest;
+import com.loki.todos.todo.payload.response.TodoResponse;
 import com.loki.todos.todo.services.TodoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,14 +36,11 @@ public class TodoController {
             description = "Returns a list of todo object."
     )
     @GetMapping
-    public List<Todo> getTodos(
+    public List<TodoResponse> getTodos(
             @RequestHeader(name = "Authorization")
             @Parameter(hidden = true) final String token
     ) {
-        if (!todoService.validator(token)) {
-            throw new UnauthorizedAccessException("Access denied. You are not authenticated.");
-        }
-        return todoService.getTodos();
+        return todoService.getTodos(token);
     }
 
     @Operation(
@@ -49,15 +48,12 @@ public class TodoController {
             description = "Requires a query title and returns a list of todos."
     )
     @GetMapping("/search")
-    public List<Todo> search(
+    public List<TodoResponse> search(
             @RequestParam("title") String title,
             @RequestHeader(name = "Authorization")
             @Parameter(hidden = true) final String token
     ) {
-        if (!todoService.validator(token)) {
-            throw new UnauthorizedAccessException("Access denied. You are not authenticated.");
-        }
-        return todoService.searchByTitle(title);
+        return todoService.searchByTitle(title, token);
     }
 
     @Operation(
@@ -72,14 +68,11 @@ public class TodoController {
     })
     @PostMapping("/addTodo")
     public ResponseEntity<?> addTodo(
-            @Valid @RequestBody Todo todo,
+            @Valid @RequestBody TodoRequest todo,
             @RequestHeader(name = "Authorization")
             @Parameter(hidden = true) final String token
     ) {
-        if (!todoService.validator(token)) {
-            throw new UnauthorizedAccessException("Access denied. You are not authenticated.");
-        }
-        todoService.saveTodo(todo);
+        todoService.saveTodo(todo, token);
         return ResponseEntity.ok(new MessageResponse("Todo added successfully"));
     }
 
@@ -99,10 +92,7 @@ public class TodoController {
             @RequestHeader(name = "Authorization")
             @Parameter(hidden = true) final String token
     ) {
-        if (!todoService.validator(token)) {
-            throw new UnauthorizedAccessException("Access denied. You are not authenticated.");
-        }
-        String message = todoService.updateTodo(todo);
+        String message = todoService.updateTodo(todo, token);
         return ResponseEntity.ok(new MessageResponse(message));
     }
 
@@ -122,10 +112,7 @@ public class TodoController {
             @RequestHeader(name = "Authorization")
             @Parameter(hidden = true) final String token
     ) {
-        if (!todoService.validator(token)) {
-            throw new UnauthorizedAccessException("Access denied. You are not authenticated.");
-        }
-        String message = todoService.deleteTodo(id);
+        String message = todoService.deleteTodo(id, token);
         return ResponseEntity.ok(new MessageResponse(message));
     }
 }

@@ -1,5 +1,6 @@
 package com.loki.todos.todo.models;
 
+import com.loki.todos.auth.models.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,4 +28,5 @@ public class Todo {
     private String description;
     private String dueDate;
     private boolean isCompleted;
+    private Long userId;
 }

@@ -44,7 +44,12 @@ public class JwtUtils {
 
     public String getUsernameForJwt(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
-                .parseClaimsJwt(token).getBody().getSubject();
+                .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String getUserIdForJwt(String token) {
+        return Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(token).getBody().getId();
     }
 
     public boolean validateJwtToken(String authToken) {
