@@ -87,7 +87,7 @@ public class TodoService {
 
         User user = validUser(tokenHeader);
 
-        return todoRepository.findAllByTitle(title).stream()
+        return todoRepository.findAllByTitle(title, user.getId()).stream()
                 .map( todo -> new TodoResponse(todo.getId(), todo.getTitle(), todo.getDescription(), todo.getDueDate(), todo.isCompleted()))
                 .collect(Collectors.toList());
     }
