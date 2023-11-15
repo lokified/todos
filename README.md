@@ -60,7 +60,7 @@ Create postgres user (superuser) with name and password as dammey
 ```
 CREATE USER loki WITH PASSWORD 'dammey' SUPERUSER;
 ```
-Create Database with name 'donatello' and assign the above created user to the database with preferable CLI or GUI tool
+Create Database with name 'todo' and assign the above created user to the database with preferable CLI or GUI tool
 
 ```
 create database todo;

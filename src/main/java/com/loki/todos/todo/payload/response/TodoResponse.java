@@ -2,8 +2,10 @@ package com.loki.todos.todo.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class TodoResponse {
     private Long id;

@@ -9,5 +9,4 @@ public class TodoRequest {
     private String description;
     private String dueDate;
     private boolean isCompleted;
-    private Long userId;
 }

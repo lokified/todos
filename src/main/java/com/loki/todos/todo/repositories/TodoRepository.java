@@ -10,8 +10,8 @@ import java.util.List;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-    @Query("SELECT t FROM Todo t WHERE t.title LIKE %:title% AND t.userId = :userId")
-    List<Todo> findAllByTitle(String title, Long userId);
+    @Query("SELECT t FROM Todo t WHERE t.title LIKE %:title%")
+    List<Todo> findAllByTitle(String title);
 
     List<Todo> findAllByUserId(Long userId);
 }

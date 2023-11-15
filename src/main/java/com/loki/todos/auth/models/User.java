@@ -1,5 +1,6 @@
 package com.loki.todos.auth.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.loki.todos.todo.models.Todo;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -26,6 +27,10 @@ public class User {
     private String username;
     private String email;
     private String password;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Todo> todos;
 
     public User(String username, String email, String password) {
         this.username = username;

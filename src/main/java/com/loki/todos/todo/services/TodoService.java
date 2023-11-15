@@ -11,9 +11,7 @@ import com.loki.todos.todo.payload.response.TodoResponse;
 import com.loki.todos.todo.repositories.TodoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -43,26 +41,28 @@ public class TodoService {
     }
 
     public List<TodoResponse> getTodos(String tokenHeader) {
-        User user = validUser(tokenHeader);
-        List<Todo> todos = todoRepository.findAllByUserId(user.getId());
+        User existingUser = validUser(tokenHeader);
+        List<Todo> todos = todoRepository.findAllByUserId(existingUser.getId());
 
         return todos.stream().map( todo -> new TodoResponse(todo.getId(), todo.getTitle(), todo.getDescription(), todo.getDueDate(), todo.isCompleted()))
                 .collect(Collectors.toList());
     }
 
     public void saveTodo(TodoRequest todo, String tokenHeader) {
-        if (!jwtUtils.validateJwtToken(tokenHeader.substring(7))) {
-            throw new UnauthorizedAccessException();
-        }
+
+        User existingUser = validUser(tokenHeader);
 
         Todo todo1 = new Todo();
         todo1.setTitle(todo.getTitle());
         todo1.setDescription(todo.getDescription());
         todo1.setDueDate(todo.getDueDate());
         todo1.setCompleted(todo.isCompleted());
-        todo1.setUserId(todo.getUserId());
+        todo1.setUser(existingUser);
 
         todoRepository.save(todo1);
+
+        existingUser.getTodos().add(todo1);
+        userRepository.save(existingUser);
     }
 
     public String deleteTodo(Long id, String tokenHeader) {
@@ -87,7 +87,7 @@ public class TodoService {
 
         User user = validUser(tokenHeader);
 
-        return todoRepository.findAllByTitle(title, user.getId()).stream()
+        return todoRepository.findAllByTitle(title).stream()
                 .map( todo -> new TodoResponse(todo.getId(), todo.getTitle(), todo.getDescription(), todo.getDueDate(), todo.isCompleted()))
                 .collect(Collectors.toList());
     }

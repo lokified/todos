@@ -2,14 +2,12 @@ package com.loki.todos.todo.models;
 
 import com.loki.todos.auth.models.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Entity
+@Data
 @Table(name = "todo")
 public class Todo {
 
@@ -28,5 +26,9 @@ public class Todo {
     private String description;
     private String dueDate;
     private boolean isCompleted;
-    private Long userId;
+
+    @ToString.Exclude
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
 }
